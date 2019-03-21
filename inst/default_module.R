@@ -43,21 +43,12 @@ output[['.__rave_modal__.']] <- renderUI({
     return(NULL)
   }
 
-<<<<<<< HEAD
-  # Check if there's any missing data
-=======
   # Check if there's any broken data
->>>>>>> dev
   broken_data = `.__internal_reactives__.`[['incomplete_data']]
   if(length(broken_data)){
     load_btn = NULL
     data_msg = '*There is one or more data missing. This module is diabled.'
   }else{
-<<<<<<< HEAD
-=======
-
-
->>>>>>> dev
     load_btn = tags$button(
       id = ns('.__load_data__.'),
       type = "button",
@@ -204,11 +195,6 @@ rave_checks = function(..., data = NULL){
         }else{
           msg = c(msg, sprintf('Phase (%s, %s)', ifelse(referenced, 'Referenced', 'Raw'), size))
         }
-<<<<<<< HEAD
-
-
-=======
->>>>>>> dev
       }
       rm(dat)
     }else if('volt' %in% d || 'voltage' %in% d){
@@ -268,12 +254,7 @@ rave_checks = function(..., data = NULL){
     `.__internal_reactives__.`[['miss_data_comps']] = quos
     `.__internal_reactives__.`[['miss_data_size']] = total_size
     `.__internal_reactives__.`[['incomplete_data']] = broken_data_type
-<<<<<<< HEAD
     stop('Needs to load data')
-=======
-
-    stop('Need to load data')
->>>>>>> dev
   }else{
     `.__internal_reactives__.`[['miss_data']] = F
   }

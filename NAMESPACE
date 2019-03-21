@@ -61,10 +61,6 @@ export(clear_cache)
 export(clear_env)
 export(color_console)
 export(compoundInput)
-<<<<<<< HEAD
-export(content)
-=======
->>>>>>> dev
 export(create_local_cache)
 export(customizedUI)
 export(dashboardHeader)

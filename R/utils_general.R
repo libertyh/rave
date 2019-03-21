@@ -440,19 +440,6 @@ paste_c <- function(x, y){
 }
 
 
-<<<<<<< HEAD
-methods::setMethod("%&%",  methods::signature(x = "character", y = 'ANY'),
-                   definition = paste_c, where = -1)
-methods::setMethod("%&%",  methods::signature(x = "ANY", y = 'character'),
-                   definition = paste_c, where = -1)
-methods::setMethod("%&%",  methods::signature(x = "character", y = 'character'),
-                   definition = paste_c, where = -1)
-
-#' @exportMethod %&%
-NULL
-=======
-`%&%` = paste_c
->>>>>>> dev
 
 
 #' Evaluate expressions

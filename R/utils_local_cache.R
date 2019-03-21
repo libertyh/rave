@@ -16,13 +16,10 @@
 NULL
 
 #' Create local cache for fast loadings
-<<<<<<< HEAD
-=======
 #' @param project_name project name
 #' @param subject_code subject code
 #' @param epoch epoch name
 #' @param time_range time range to cache
->>>>>>> dev
 #' @export
 create_local_cache <- function(project_name, subject_code, epoch, time_range){
 
@@ -30,11 +27,7 @@ create_local_cache <- function(project_name, subject_code, epoch, time_range){
 
 
   # TODO: check data
-<<<<<<< HEAD
-  check_results = rave:::check_subjects2(project_name = project_name, subject_code = subject_code, quiet = T)
-=======
   check_results = check_subjects2(project_name = project_name, subject_code = subject_code, quiet = T)
->>>>>>> dev
 
   # 1. get directories
   subject = Subject$new(subject_code = subject_code, project_name = project_name, strict = F)
@@ -101,11 +94,7 @@ create_local_cache <- function(project_name, subject_code, epoch, time_range){
     )
 
     fst_file = file.path(subject_cache_dir, 'coef', sprintf('%d.fst', e))
-<<<<<<< HEAD
-    fst::write_fst(coef, fst_file, compress = 100)
-=======
     write_fst(coef, fst_file, compress = 100)
->>>>>>> dev
     rm(coef)
 
     # get voltage
@@ -118,11 +107,7 @@ create_local_cache <- function(project_name, subject_code, epoch, time_range){
     })
     volt = data.frame(volt = as.vector(t(volt)))
     fst_file = file.path(subject_cache_dir, 'voltage', sprintf('%d.fst', e))
-<<<<<<< HEAD
-    fst::write_fst(volt, fst_file, compress = 100)
-=======
     write_fst(volt, fst_file, compress = 100)
->>>>>>> dev
     rm(volt)
 
   }, .call_back = function(ii){
@@ -148,11 +133,7 @@ create_local_cache <- function(project_name, subject_code, epoch, time_range){
       })
       volt = data.frame(Volt = as.vector(t(volt)))
       fst_file = file.path(subject_cache_dir, 'ref', sprintf('%s.volt.fst', f))
-<<<<<<< HEAD
-      fst::write_fst(volt, fst_file, compress = 100)
-=======
       write_fst(volt, fst_file, compress = 100)
->>>>>>> dev
       rm(volt)
 
 
@@ -173,11 +154,7 @@ create_local_cache <- function(project_name, subject_code, epoch, time_range){
       )
 
       fst_file = file.path(subject_cache_dir, 'ref', sprintf('%s.coef.fst', f))
-<<<<<<< HEAD
-      fst::write_fst(coef, fst_file, compress = 100)
-=======
       write_fst(coef, fst_file, compress = 100)
->>>>>>> dev
       rm(coef)
     }
   }
@@ -214,8 +191,6 @@ create_local_cache <- function(project_name, subject_code, epoch, time_range){
 
 
 #' Load local cache for fast importing voltage, power, and phase
-<<<<<<< HEAD
-=======
 #' @param project_name project name
 #' @param subject_code subject code
 #' @param epoch epoch name
@@ -224,7 +199,6 @@ create_local_cache <- function(project_name, subject_code, epoch, time_range){
 #' @param electrodes electrodes to cache
 #' @param referenced which reference to be used
 #' @param data_type which type(s) of data to cache
->>>>>>> dev
 #' @export
 load_local_cache <- function(project_name, subject_code, epoch, time_range,
                              frequency_range = NULL, electrodes,
@@ -261,22 +235,14 @@ load_local_cache <- function(project_name, subject_code, epoch, time_range,
     })
 
     if(!is.null(subject)){
-<<<<<<< HEAD
-      assertthat::assert_that(
-=======
       assert_that(
->>>>>>> dev
         config$srate_volt == subject$preprocess_info('srate'),
         config$srate_wave == subject$sample_rate
       )
     }
 
     if(is.data.frame(epoch_tbl)){
-<<<<<<< HEAD
-      assertthat::assert_that(
-=======
       assert_that(
->>>>>>> dev
         nrow(epoch_tbl) == nrow(epoch_cached),
         all(epoch_tbl$Block == epoch_cached$Block),
         all(abs(epoch_tbl$Time - epoch_cached$Time) < 0.01),
@@ -286,11 +252,7 @@ load_local_cache <- function(project_name, subject_code, epoch, time_range,
 
 
     # check if cache contains all data
-<<<<<<< HEAD
-    assertthat::assert_that(
-=======
     assert_that(
->>>>>>> dev
       config$epoch == epoch,
       all(time_range <= config$time_range),
       all(electrodes %in% parse_selections(config$electrodes))
@@ -312,11 +274,7 @@ load_local_cache <- function(project_name, subject_code, epoch, time_range,
         ref_table = load_meta('references', project_name = project_name, subject_code = subject_code, meta_name = referenced)
       }
 
-<<<<<<< HEAD
-      assertthat::assert_that(!is.null(ref_table))
-=======
       assert_that(!is.null(ref_table))
->>>>>>> dev
     }
 
     re = list()
@@ -346,11 +304,7 @@ load_local_cache <- function(project_name, subject_code, epoch, time_range,
       el$hybrid = T
       volt$data = data.frame(volt$data)
       names(volt$data) = paste0('V', seq_len(ncol(volt$data)))
-<<<<<<< HEAD
-      fst::write_fst(volt$data, el$swap_file)
-=======
       write_fst(volt$data, el$swap_file)
->>>>>>> dev
 
       rm(volt)
 
@@ -397,30 +351,18 @@ load_local_cache <- function(project_name, subject_code, epoch, time_range,
         phase = Arg(coef$data)
         rm(coef)
 
-<<<<<<< HEAD
-        fst::write_fst(as.data.frame(phase), el2$swap_file)
-=======
         write_fst(as.data.frame(phase), el2$swap_file)
->>>>>>> dev
         rm(phase)
 
         re[['phase']] = el2
 
-<<<<<<< HEAD
-        fst::write_fst(as.data.frame(power), el$swap_file)
-=======
         write_fst(as.data.frame(power), el$swap_file)
->>>>>>> dev
         rm(power)
 
         re[['power']] = el
       }else{
 
-<<<<<<< HEAD
-        fst::write_fst(as.data.frame(coef$data), el$swap_file)
-=======
         write_fst(as.data.frame(coef$data), el$swap_file)
->>>>>>> dev
         if('power' %in% data_type){
           re[['power']] = el
         }else{

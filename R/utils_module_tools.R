@@ -115,11 +115,8 @@ rave_module_tools <- function(env = NULL, data_env = NULL, quiet = FALSE) {
         time_range = data_env$.private$meta$epoch_info$time_range
         electrodes = data_env$preload_info$electrodes
 
-<<<<<<< HEAD
-=======
         ref_name = data_env$preload_info$reference_name
 
->>>>>>> dev
         # Try to load from cache
         re = load_local_cache(
           project_name = data_env$subject$project_name,
@@ -182,10 +179,7 @@ rave_module_tools <- function(env = NULL, data_env = NULL, quiet = FALSE) {
 
         list2env(r, envir = data_env$.private[['volt_unblocked']])
 
-<<<<<<< HEAD
-=======
         progress$close()
->>>>>>> dev
         rm(list = ls(), envir = environment())
       }
 

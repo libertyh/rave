@@ -997,18 +997,8 @@ shiny_data_selector <- function(module_id){
       load_mesh = input$load_mesh
 
       subject = as_subject(subject_id, reference = ref)
-
-<<<<<<< HEAD
-      brain = brain_env[[subject_id]]
-      if(is.null(brain)){
-        s = Subject$new(project_name = project, subject_code = subject, reference = ref, strict = FALSE)
-        brain = RaveBrain$new(subject = s)
-        brain_env[[subject_id]] = brain
-      }
-=======
       brain = rave_brain2()
       brain$load_electrodes(subject = subject)
->>>>>>> dev
 
       if(load_mesh){
         brain$load_surfaces(subject = subject)

@@ -151,17 +151,12 @@ asJSON.Subject <- function(obj){
 }
 
 #' Returns subject ID
-<<<<<<< HEAD
-=======
 #' @param x object to be coerced or tested.
 #' @param ... further arguments passed to or from other methods.
->>>>>>> dev
 #' @export
 as.character.Subject <- function(x, ...){
   x$id
 }
-<<<<<<< HEAD
-=======
 
 # Function that always returns a subject (if exists)
 as_subject <- function(subject, strict = FALSE, reference = 'default'){
@@ -173,4 +168,3 @@ as_subject <- function(subject, strict = FALSE, reference = 'default'){
 
   subject
 }
->>>>>>> dev

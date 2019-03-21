@@ -38,11 +38,6 @@ create_template <- function(path, ...){
   template_dir = system.file('template', package = 'rave')
   # template_dir = './inst/template'
   fs = list.files(template_dir, recursive = T, pattern = '^[a-zA-Z]', all.files = F, full.names = F)
-<<<<<<< HEAD
-
-  fs = c('.Rbuildignore', fs)
-=======
->>>>>>> dev
 
   for(f in fs){
     s = readLines(file.path(template_dir, f))

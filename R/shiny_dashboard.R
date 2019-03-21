@@ -207,11 +207,7 @@ dashboardPage <- function (
     tags$body(
       class = paste0("skin-", skin, cls), # if you want control-sidebar to be opened, add " control-sidebar-open"
       style = "min-height: 611px;",
-<<<<<<< HEAD
-      tags$head(tags$link(rel = "icon", type = "image/x-icon", href = rave:::to_datauri(system.file('assets/images/favicon.ico', package = 'rave')))),
-=======
       tags$head(tags$link(rel = "icon", type = "image/x-icon", href = to_datauri(system.file('assets/images/favicon.ico', package = 'rave')))),
->>>>>>> dev
       shiny::bootstrapPage(
         shinyjs::useShinyjs(),
         div(
