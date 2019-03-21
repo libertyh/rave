@@ -8,6 +8,26 @@ load_local_cache(project_name, subject_code, epoch, time_range,
   frequency_range = NULL, electrodes, referenced = FALSE,
   data_type = "voltage")
 }
+<<<<<<< HEAD
+=======
+\arguments{
+\item{project_name}{project name}
+
+\item{subject_code}{subject code}
+
+\item{epoch}{epoch name}
+
+\item{time_range}{time range to cache}
+
+\item{frequency_range}{frequency range to cache}
+
+\item{electrodes}{electrodes to cache}
+
+\item{referenced}{which reference to be used}
+
+\item{data_type}{which type(s) of data to cache}
+}
+>>>>>>> dev
 \description{
 Load local cache for fast importing voltage, power, and phase
 }

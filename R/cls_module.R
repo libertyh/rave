@@ -40,12 +40,19 @@ getDefaultDataRepository <- function(
 #' Attach subject data
 #' @param unload TRUE if you want to detach
 #' @export
-attachDefaultDataRepository <- function(unload = F){
+attachDefaultDataRepository <- function(unload = T){
   if(unload){
-    try({detach(rave_data)}, silent = T)
+    try({detach('rave_data')}, silent = T)
+  }
+
+  rave_data = getDefaultDataRepository()
+
+  rave_idx = which(search() == "package:rave")
+
+  if(length(rave_idx)){
+    do.call('attach', list(rave_data, name = 'rave_data', pos = rave_idx))
   }else{
-    rave_data = getDefaultDataRepository()
-    attach(rave_data)
+    do.call('attach', list(rave_data, name = 'rave_data'))
   }
 }
 
@@ -70,6 +77,7 @@ ModuleEnvir <- R6::R6Class(
     rmd_path = NULL,
     parent_env = NULL,
     from_package = FALSE,
+    sidebar_width = 3L,
     info = function(){
       cat('Module Name:', self$label_name, '\n')
       cat('Version:', self$version, '\n')
@@ -79,8 +87,9 @@ ModuleEnvir <- R6::R6Class(
         cat(' -', a, '\n')
       }
     },
-    print = function(){
-      pryr::address(self)
+    print = function(...){
+      self$info()
+      env_address(self)
     },
     initialize = function(
       module_id,
@@ -209,12 +218,12 @@ ModuleEnvir <- R6::R6Class(
 
       # validate script_path
       if(missing(script_path)){
-        assertthat::assert_that(!is.null(.script_content), msg = 'Script Path not specified')
+        assert_that(!is.null(.script_content), msg = 'Script Path not specified')
         script_path = file.path(dirname(rmd_path), '.rave_tmp.R')
         writeLines(.script_content, script_path)
       }
 
-      assertthat::validate_that(file.exists(script_path), msg = sprintf('[File Not Found] %s', script_path))
+      assert_that(file.exists(script_path), msg = sprintf('[File Not Found] %s', script_path))
       script_path = base::normalizePath(script_path)
       self$script_path = script_path
 
@@ -308,10 +317,15 @@ ModuleEnvir <- R6::R6Class(
     },
     render_ui = function(session = getDefaultReactiveDomain()){
       e = self$get_or_new_exec_env(session = session)
+      if(length(e$input_ids)){
+        sidebar_width = self$sidebar_width
+      }else{
+        sidebar_width = 0
+      }
       shiny::fluidRow(
         uiOutput(e$ns('.__rave_modal__.')),
-        e$generate_input_ui(),
-        e$generate_output_ui()
+        e$generate_input_ui(sidebar_width = sidebar_width),
+        e$generate_output_ui(sidebar_width = sidebar_width)
       )
 
     },
@@ -359,22 +373,17 @@ ModuleEnvir <- R6::R6Class(
 
 
 #' Functions for dev use
-#' @aliases write_rave_modules
 #' @param ... Expressions
 #' @export
 rave_ignore <- function(...){
-  dots <- lazyeval::lazy_dots(...)
-  globalenv = globalenv()
-  for(i in 1:length(dots)){
-    dots[[i]]$env <- globalenv
-    logger('> ', dots[[i]]$expr, level = 'INFO')
-    lazyeval::lazy_eval(dots[[i]])
+  quos = rlang::quos(...)
+  for(i in 1:length(quos)){
+    logger('> ', rlang::quo_squash(quos[[i]]), level = 'INFO')
+    eval_dirty(quos[[i]], globalenv())
   }
 }
 
 
-#' @aliases write_rave_modules
-#' @export
 rave_inputs <- function(..., .input_panels = list(), .env = globalenv()){
   quos = rlang::quos(...)
   parser = comp_parser()
@@ -394,16 +403,12 @@ rave_inputs <- function(..., .input_panels = list(), .env = globalenv()){
   invisible(vals)
 }
 
-#' @aliases write_rave_modules
-#' @export
 rave_outputs <- function(..., .output_tabsets = list()){
   # do nothing
   return(invisible())
 }
 
 
-#' @aliases write_rave_modules
-#' @export
 rave_updates <- function(..., .env = globalenv()){
 
   res = rlang::quos(...)
@@ -412,14 +417,14 @@ rave_updates <- function(..., .env = globalenv()){
     return()
   }
   lapply(res[nms == ''], function(quo){
-    rave::eval_dirty(quo, env = .env)
+    eval_dirty(quo, env = .env)
   })
 
   nms = nms[nms != '']
 
   # parser = comp_parser()
   for(nm in nms){
-    val = rave::eval_dirty(res[[nm]], env = .env)
+    val = eval_dirty(res[[nm]], env = .env)
     try({
       re = val$value
       re %?<-% val$selected
@@ -432,31 +437,30 @@ rave_updates <- function(..., .env = globalenv()){
 }
 
 
-#' @aliases write_rave_modules
-#' @export
 rave_execute <- function(..., auto = TRUE, .env = globalenv()){
   assign('.is_async', TRUE, envir = .env)
-  dots <- lazyeval::lazy_dots(...)
-  for(i in 1:length(dots)){
-    dots[[i]]$env <- .env
-    logger('> ', dots[[i]]$expr, level = 'INFO')
-    lazyeval::lazy_eval(dots[[i]])
+  quos = rlang::quos(...)
+
+  for( quo in quos ){
+    logger('> ', rlang::quo_squash(quo), level = 'INFO')
+    eval_dirty(quo, .env)
   }
+
 }
 
 
 
 #' Cache input values
-#' @aliases write_rave_modules
+#' @param inputId input ID
+#' @param val value if not cached
+#' @param read_only logical, if FALSE, replace cache
 #' @export
 cache_input <- function(inputId, val, read_only = T){
   return(val)
 }
 
 
-#' Get x or default
-#' @aliases write_rave_modules
-#' @export
+# Get x or default
 async_var <- function(x, default = NULL){
   tryCatch({
     if(is.null(x)){
@@ -473,8 +477,6 @@ async_var <- function(x, default = NULL){
 }
 
 
-#' @aliases write_rave_modules
-#' @export
 export_report <- function(expr, inputId){
 
 }

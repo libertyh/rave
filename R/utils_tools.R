@@ -1,6 +1,9 @@
+#' Function to create RAVE preprocess tools
+#' @param env environment to save tools to
+#' @param ... ignored
 #' @export
 rave_preprocess_tools <- function(env = new.env(), ...){
-  assertthat::assert_that(is.environment(env), msg = 'env MUST be an environment')
+  assert_that(is.environment(env), msg = 'env MUST be an environment')
 
   # initialize subject
   env$subject = list()
@@ -100,7 +103,7 @@ rave_preprocess_tools <- function(env = new.env(), ...){
       s = SubjectInfo2$new(project_name = project_name, subject_code = subject_code, strict = strict)
       env[['subject']] = s
 
-      logger('Loaded Subject: [Project]/[Subject]' %&% utils$get_subject_id())
+      logger('Loaded Subject: ' %&% utils$get_subject_id())
     }
     save_subject = function(subject_code, project_name){
       logger('Saving Subject')
@@ -387,7 +390,7 @@ rave_preprocess_tools <- function(env = new.env(), ...){
     }
 
     load_wavelet = function(electrode, blocks, referenced = F){
-      assertthat::assert_that(utils$waveleted(), msg = 'Wavelet is needed. Run preprocess first.')
+      assert_that(utils$waveleted(), msg = 'Wavelet is needed. Run preprocess first.')
       # only load raw wavelet
       blocks %?<-% utils$get_blocks()
       dirs = utils$get_from_subject('dirs')
@@ -561,7 +564,7 @@ rave_preprocess_tools <- function(env = new.env(), ...){
             # write
             cache_file = file.path(dirs$channel_dir, 'cache', 'power', 'raw', block, sprintf('%d.fst', e))
 
-            fst::write_fst(power, cache_file, compress = 100)
+            write_fst(power, cache_file, compress = 100)
           }
 
 
@@ -595,7 +598,7 @@ rave_preprocess_tools <- function(env = new.env(), ...){
             # write
             cache_file = file.path(dirs$channel_dir, 'cache', 'phase', 'raw', block, sprintf('%d.fst', e))
 
-            fst::write_fst(phase, cache_file, compress = 100)
+            write_fst(phase, cache_file, compress = 100)
           }
 
           # voltage
@@ -627,7 +630,7 @@ rave_preprocess_tools <- function(env = new.env(), ...){
             # write
             cache_file = file.path(dirs$channel_dir, 'cache', 'voltage', 'raw', block, sprintf('%d.fst', e))
 
-            fst::write_fst(s, cache_file, compress = 100)
+            write_fst(s, cache_file, compress = 100)
           }
 
           # # Raw complex coefficient

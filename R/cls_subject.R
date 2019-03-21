@@ -17,7 +17,7 @@ Subject <- R6::R6Class(
       cat('<Subject> [', self$subject_id, ']\n - Total electrodes: ', length(self$valid_electrodes), '\n', sep = '')
     },
     print = function(){
-      pryr::address(self)
+      env_address(self)
     },
     finalize = function(){
       rm(list = ls(private$loaded), envir = private$loaded)
@@ -78,13 +78,14 @@ Subject <- R6::R6Class(
       electrodes[electrodes %in% self$valid_electrodes]
     },
     has_bad_time_point = function(block, electrode, start, end){
-      (self$meta[['time_excluded']]) %>%
+      nrow(
         subset(
+          self$meta[['time_excluded']],
           Block %in% block &
-          Electrode %in% electrode &
-          (start < End | end < Start)
-        ) %>%
-        nrow() ->
+            Electrode %in% electrode &
+            (start < End | end < Start)
+        )
+      ) ->
         res
       return(res > 0)
     }
@@ -136,9 +137,8 @@ r_to_py.Subject <- function(obj, convert = FALSE){
   ), convert = convert)
 }
 
-#' Conver subject to JSON format
-#'
-#' @export
+# Conver subject to JSON format
+# Preserved for jsonlite
 asJSON.Subject <- function(obj){
   list(
     subject_id = obj$id,
@@ -151,7 +151,26 @@ asJSON.Subject <- function(obj){
 }
 
 #' Returns subject ID
+<<<<<<< HEAD
+=======
+#' @param x object to be coerced or tested.
+#' @param ... further arguments passed to or from other methods.
+>>>>>>> dev
 #' @export
 as.character.Subject <- function(x, ...){
   x$id
 }
+<<<<<<< HEAD
+=======
+
+# Function that always returns a subject (if exists)
+as_subject <- function(subject, strict = FALSE, reference = 'default'){
+  if(is.character(subject)){
+    s = stringr::str_split_fixed(subject, '/', n = 2)
+    s = unlist(s)
+    subject = Subject$new(project_name = s[1], subject_code = s[2], strict = strict, reference = reference)
+  }
+
+  subject
+}
+>>>>>>> dev

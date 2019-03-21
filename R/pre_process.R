@@ -1,5 +1,4 @@
 #' RAVE Preprocess Function
-#' @usage rave_pre_process(sidebar_width = 3L, launch.browser = T, host = '127.0.0.1', ...)
 #' @param sidebar_width sibar width from 1 to 12 recommended 3 or 4
 #' @param launch.browser launch browser default is on
 #' @param host default is localhost 127.0.0.1
@@ -7,10 +6,8 @@
 #' @param test.mode passed to shinyApp
 #' @param ver internally used please don't change
 #' @param theme color theme
-#' @import shiny
-#' @import stringr
-#' @importFrom magrittr %>%
-#' @importFrom assertthat assert_that
+#' @param modules preprocess modules to load, reserved for future use
+#' @param ... not used
 #' @export
 rave_preprocess <- function(
   sidebar_width = 3,
@@ -28,7 +25,7 @@ rave_preprocess <- function(
   default_subject_code = ''
   model_instances = NULL
 
-  future::plan(future::multiprocess, workers = rave::rave_options('max_worker'))
+  future::plan(future::multiprocess, workers = rave_options('max_worker'))
 
 
   modules = list(
@@ -66,7 +63,7 @@ rave_preprocess <- function(
       instance = do.call(..func, list(
         module_id = ID %&% '_M',
         sidebar_width = sidebar_width
-      ), envir = loadNamespace('rave'))
+      ))#, envir = loadNamespace('rave'))
 
       list(
         ID = ID,
@@ -220,6 +217,7 @@ rave_preprocess <- function(
   ))
 }
 
+#' @name rave_preprocess
 #' @export
 rave_pre_process = rave_preprocess
 

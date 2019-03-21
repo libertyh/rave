@@ -8,6 +8,8 @@
 #' @param reference, similar to epoch, For example, use "default" if exists reference file "reference_default.csv"
 #' @param attach, characters or NULL, NULL if you don't want to attach it, "r" if want to load data as R environment, "py" if python, "matlab" for matlab.
 #' @param data_env, environment to load data into.
+#' @param load_brain try to load freesurf files?
+#' @param strict check data completness? default is FALSE (suggested)
 #' @details Usually this function is for module writters and for debug use, or adhoc analysis.
 #' @export
 rave_prepare <- function(
@@ -17,8 +19,13 @@ rave_prepare <- function(
   frequency_range,
   data_types = c('power'),
   reference = 'default', attach = 'r',
+<<<<<<< HEAD
   load_brain = TRUE,
   data_env = rave::getDefaultDataRepository(),
+=======
+  load_brain = FALSE,
+  data_env = getDefaultDataRepository(),
+>>>>>>> dev
   strict = FALSE
 ){
   # subject = 'congruency/YAB'; electrodes = 14:15; epoch = 'YABa'; time_range = c(1,2); data_types = NULL; reference = 'default'
@@ -45,6 +52,11 @@ rave_prepare <- function(
     subject = Subject$new(project_name = subject_split[[1]], subject_code = subject_split[[2]],
                           reference = reference, strict = strict)
   }
+<<<<<<< HEAD
+=======
+
+  subject$is_strict = strict
+>>>>>>> dev
 
   repo = ECoGRepository$new(subject = subject, autoload = F, reference = reference)
   repo$load_electrodes(electrodes = electrodes, reference = reference)
@@ -62,16 +74,14 @@ rave_prepare <- function(
     func = NULL
   )
 
-  # Load brain
-  brain = RaveBrain$new()
-  brain$load_subject(subject = repo$subject)
 
   if(load_brain){
-    try({
-      brain$import_spec(nearest_face = F)
-    }, silent = TRUE)
+    # try to load and cache brain
+    brain = rave_brain2(surfaces = c('pial', 'white', 'smoothwm'))
+    brain$load_electrodes(subject = repo$subject)
+    brain$load_surfaces(subject = repo$subject)
+    # if brain is not cached, cache it (should we do it here?)
   }
-
 
 
   # Register to data_env
@@ -94,10 +104,14 @@ rave_prepare <- function(
   data_env$.private = new.env(parent = baseenv())
   data_env$.private$repo = repo
   data_env$.private$meta = meta
-  data_env$.private$brain = brain
+  # data_env$.private$brain = brain
   data_env$.private$preproc_tools = rave_preprocess_tools()
   data_env$.private$preproc_tools$check_load_subject(subject_code = subject$subject_code, project_name = subject$project_name, strict = subject$is_strict)
+<<<<<<< HEAD
   data_env$data_check = rave:::check_subjects2(project_name = subject$project_name,
+=======
+  data_env$data_check = check_subjects2(project_name = subject$project_name,
+>>>>>>> dev
                                                subject_code = subject$subject_code, quiet = TRUE)
   data_env$subject = subject
   data_env$preload_info = list(
@@ -134,7 +148,14 @@ rave_prepare <- function(
       base::detach('rave_data', character.only = T, force = T)
     }
 
-    base::attach(data_env, name = 'rave_data')
+    rave_idx = which(search() == "package:rave")
+
+    if(length(rave_idx)){
+      do.call('attach', list(data_env, name = 'rave_data', pos = rave_idx))
+    }else{
+      do.call('attach', list(data_env, name = 'rave_data'))
+    }
+
 
 
     if(attach == TRUE || attach %in% c('R', 'r')){

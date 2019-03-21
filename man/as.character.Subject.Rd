@@ -6,6 +6,14 @@
 \usage{
 \method{as.character}{Subject}(x, ...)
 }
+<<<<<<< HEAD
+=======
+\arguments{
+\item{x}{object to be coerced or tested.}
+
+\item{...}{further arguments passed to or from other methods.}
+}
+>>>>>>> dev
 \description{
 Returns subject ID
 }
