@@ -192,7 +192,7 @@ check_subjects <- function(
     }
     sapply(sc, function(subject_code){
       if(!check){
-        return(project_name %&% '/' %&% subject_code)
+        return(paste0(project_name, '/', subject_code))
       }
 
       # Need to check if preprocess folder exists
@@ -585,7 +585,7 @@ shiny_data_selector <- function(module_id){
     })
 
     lapply(1:7, function(ii){
-      observeEvent(input[['freq_preset_' %&% ii]], {
+      observeEvent(input[[paste0('freq_preset_', ii)]], {
         updateSliderInput(session = session, inputId = 'frequencies', value = fband[[ii]])
       })
     })
@@ -684,7 +684,7 @@ shiny_data_selector <- function(module_id){
                 style="flex-basis: 25%;",
                 local({
                   if(ii > 1){
-                    selectInput(ns('filter_lgt_' %&% ii), 'Filter ' %&% ii, choices = c('AND', 'OR'), selected = 'OR')
+                    selectInput(ns(paste0('filter_lgt_' , ii)), paste0('Filter ', ii), choices = c('AND', 'OR'), selected = 'OR')
                   }else{
                     tags$label('Filter 1')
                   }
@@ -692,17 +692,17 @@ shiny_data_selector <- function(module_id){
               ),
               div(
                 style="flex-basis: 25%;",
-                selectInput(ns('filter_col_' %&% ii), 'Key', choices = vars, selected = vars[1])
+                selectInput(ns(paste0('filter_col_', ii)), 'Key', choices = vars, selected = vars[1])
               ),
               div(
                 style="flex-basis: 25%;",
-                selectInput(ns('filter_op_' %&% ii), 'Operator',
+                selectInput(ns(paste0('filter_op_', ii)), 'Operator',
                             choices = c('=', '>', '<', '>=', '<=', 'IN', 'NOT IN', 'BETWEEN'),
                             selected = 'NOT IN')
               ),
               div(
                 style="flex-basis: 25%;",
-                textInput(ns('filter_val_' %&% ii), 'Value', value = '')
+                textInput(ns(paste0('filter_val_', ii)), 'Value', value = '')
               )
             )
           }))
@@ -721,10 +721,10 @@ shiny_data_selector <- function(module_id){
       try({
         sel = rep(TRUE, length(res))
         for(ii in 1:3){
-          lgt = input[['filter_lgt_' %&% ii]]
-          var = input[['filter_col_' %&% ii]]
-          op = input[['filter_op_' %&% ii]]
-          val = input[['filter_val_' %&% ii]]
+          lgt = input[[paste0('filter_lgt_', ii)]]
+          var = input[[paste0('filter_col_' , ii)]]
+          op = input[[paste0('filter_op_' , ii)]]
+          val = input[[paste0('filter_val_' , ii)]]
 
           if(var %in% names(mask_table)){
             x = mask_table[[var]]
@@ -825,20 +825,6 @@ shiny_data_selector <- function(module_id){
             12,
             div(
               class = 'rave-grid-inputs margin-top-20',
-              div(
-                class = 'rave-grid-inputs-legend',
-                'Load Estimation'
-              ),
-              div(
-                style="flex-basis: 100%;",
-                uiOutput(ns('ui_summary'))
-              )
-            )
-          ),
-          column(
-            12,
-            div(
-              class = 'rave-grid-inputs margin-top-20',
               style = 'padding: 5px 0px 5px 5px;',
               div(
                 class = 'rave-grid-inputs-legend',
@@ -852,6 +838,20 @@ shiny_data_selector <- function(module_id){
                 ),
                 threejsBrainOutput(ns('three_viewer'), height = '500px')
                 # threejsOutput(ns('three_viewer'), height = '500px')
+              )
+            )
+          ),
+          column(
+            12,
+            div(
+              class = 'rave-grid-inputs margin-top-20',
+              div(
+                class = 'rave-grid-inputs-legend',
+                'Load Estimation'
+              ),
+              div(
+                style="flex-basis: 100%;",
+                uiOutput(ns('ui_summary'))
               )
             )
           )
@@ -869,7 +869,50 @@ shiny_data_selector <- function(module_id){
 
       # Trial
       epoch = input$epoch
+      # Check epoch file
+      msg = check_epoch(sprintf('%s/%s', project, subject), epoch_name = epoch)
+      if(!isTRUE(msg)){
+        msg = msg$message
+
+        sub = as_subject(sprintf('%s/%s', project, subject), strict = FALSE)
+        blocks = sub$preprocess_info('blocks')
+        blocks = c(rep(blocks[1], 4), blocks[-1])
+        examp = data.frame(
+          Block = blocks,
+          Time = c('5.12', '10.4', '...', rep('', length(blocks) - 3)),
+          Trial = seq_along(blocks),
+          Condition = c('cond1', 'cond2', '...', rep('', length(blocks) - 3))
+        )
+        examp = capture.output({print(examp)})
+
+        time_range = ''
+        time_points = load_meta('time_points', project, subject)
+        if(is.data.frame(time_points)){
+          time_range = lapply(split(time_points, time_points$Block), function(s){
+            rg = range(s$Time)
+
+            tags$li(
+              sprintf('Block %s, Time range: %.2f ~ %.2f seconds', unique(s$Block), rg[1], rg[2])
+            )
+          })
+          time_range = tags$ul(tagList(time_range))
+        }
+
+        return(p(
+          'An error found in the epoch file. Message: ', br(),
+          strong(msg), br(), 'Here is an example of epoch file:', br(),
+          tags$pre(
+            paste(examp, collapse = '\n')
+          ),br(),
+          '* Note: Time is relative to the start of the block. Trial is sequential across Blocks. Non-sequential trial numbers are OK, but they must be unique.',
+          time_range
+
+        ))
+      }
+
+
       epoch_table = load_meta(meta_type = 'epoch', meta_name = epoch, project_name = project, subject_code = subject)
+
       n_trials = nrow(epoch_table)
 
       # Frequency
@@ -1038,7 +1081,7 @@ shiny_data_selector <- function(module_id){
       epoch = input$epoch
       epoch_range = c(input$epoch_pre, input$epoch_post)
       reference = input$reference
-      subject_id = project_name %&% '/' %&% subject_code
+      subject_id = paste0(project_name , '/' , subject_code)
       electrodes = parse_selections(input$electrodes)
 
       tmp_subject = Subject$new(project_name = project_name, subject_code = subject_code, reference = reference, strict = FALSE)

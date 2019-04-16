@@ -1,7 +1,7 @@
 #' Tools to load and view brain in 3D viewer
-#' @param surfaces one or more from "pial, white, smoothwm", brain surface types
+#' @param surfaces one or more from `pial`, `white`, `smoothwm`, brain surface types
 #' @param multiple_subject is this a template brain?
-#' @param prefix internally used, prefix to freesurfer asc files
+#' @param prefix internally used, prefix to `FreeSurfer` asc files
 #' @export
 rave_brain2 <- function(surfaces = 'pial', multiple_subject = FALSE, prefix = 'std.141.'){
   env = environment()
@@ -121,13 +121,13 @@ rave_brain2 <- function(surfaces = 'pial', multiple_subject = FALSE, prefix = 's
         }else{
 
           logger('Cannot find VOLREG_MATVEC_000000 in afni file. ',
-                 'Please make sure it contains transform matrix from T1 to Freesurfer orientation. ',
+                 'Please make sure it contains transform matrix from T1 to FreeSurfer orientation. ',
                  'No transform will be made', level = 'WARNING')
 
         }
       }else{
         trans_mat = diag(1, 4)
-        logger('No transform matrix found, I assume that these electrodes have already been aligned to freesurfer orientation.', level = 'INFO')
+        logger('No transform matrix found, I assume that these electrodes have already been aligned to FreeSurfer orientation.', level = 'INFO')
       }
     }
 
@@ -200,7 +200,7 @@ rave_brain2 <- function(surfaces = 'pial', multiple_subject = FALSE, prefix = 's
       })
     }
 
-    progress$inc('Transform electrodes from T1 to Freesurfer...')
+    progress$inc('Transform electrodes from T1 to FreeSurfer...')
     align_electrodes(subject)
 
   }
@@ -310,6 +310,31 @@ rave_brain2 <- function(surfaces = 'pial', multiple_subject = FALSE, prefix = 's
 
 
 
+  set_multiple_subject = function(is_mult){
+    is_mult = isTRUE(is_mult)
+    # if is_mult
+
+    if(is_mult){
+      ## Remove gui elements
+      # brain$groups[["Left Hemisphere"]]$group_data$.gui_params = brain$groups[["Left Hemisphere"]]$group_data$.gui_params['N27']
+      # brain$groups[["Right Hemisphere"]]$group_data$.gui_params = brain$groups[["Right Hemisphere"]]$group_data$.gui_params['N27']
+
+      ## remove surfaces
+      sf = names(brain$groups[["Left Hemisphere"]]$group_data)
+      nm = sf[!stringr::str_detect(sf, '^free_(vertices|faces)_[lr]h - .+ \\((?!Template N27).*\\)$')]
+      brain$groups[["Left Hemisphere"]]$group_data = brain$groups[["Left Hemisphere"]]$group_data[nm]
+
+      sf = names(brain$groups[["Right Hemisphere"]]$group_data)
+      nm = sf[!stringr::str_detect(sf, '^free_(vertices|faces)_[lr]h - .+ \\((?!Template N27).*\\)$')]
+      brain$groups[["Right Hemisphere"]]$group_data = brain$groups[["Right Hemisphere"]]$group_data[nm]
+    }
+
+    brain$set_multiple_subject(is_mult)
+
+  }
+
+
+
   re = list(
     has_subject = has_subject,
     add_subject = add_subject,
@@ -319,11 +344,11 @@ rave_brain2 <- function(surfaces = 'pial', multiple_subject = FALSE, prefix = 's
     load_surfaces = load_surfaces,
     calculate_template_brain_location = cache,
 
-    set_multiple_subject = function(is_mult){
-      is_mult = isTRUE(is_mult)
-      brain$set_multiple_subject(is_mult)
-    },
+    set_multiple_subject = set_multiple_subject,
     view = function(...){
+      if(brain$multiple_subject){
+        set_multiple_subject(brain$multiple_subject)
+      }
       env$last_viewer_args = list(...)
       brain$view(...)
     },
@@ -352,9 +377,9 @@ rave_brain2 <- function(surfaces = 'pial', multiple_subject = FALSE, prefix = 's
 }
 
 
-#' Show RAVE brain via package threeBrain
+#' Show RAVE brain via package `threeBrain`
 #' @param x generated from rave_brain2
-#' @param ... passed to threeBrain::threejs_brain
+#' @param ... passed to \code{threeBrain::threejs_brain}
 #' @export
 print.rave_three_brain <- function(x, ...){
   print(x$view(...))

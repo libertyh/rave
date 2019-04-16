@@ -10,8 +10,8 @@ to_package_name <- function(module_id){
 load_modules <- function(legacy = FALSE){
 
   if(!legacy){
-    if(!rave:::package_installed('ravebuiltins')){
-      f = rave:::get_from_package('install_github', pkg = 'remotes')
+    if(!package_installed('ravebuiltins')){
+      f = get_from_package('install_github', pkg = 'remotes')
       f('beauchamplab/ravebuiltins', dependencies = FALSE, upgrade = 'never', force = F)
     }
 
@@ -24,7 +24,9 @@ load_modules <- function(legacy = FALSE){
   #1. filter out all deactived packages
   modules = modules[modules$Active, ]
 
-  assert_that(nrow(modules) > 0, msg = 'Is there any module specified in ' %&% rave_options('module_lookup_file') %&% ' ?')
+  assert_that(nrow(modules) > 0, msg = paste0(
+    'Is there any module specified in ', rave_options('module_lookup_file'), ' ?'
+  ))
 
   #2. check if all compiled packages exists
   pkg_ids = unique(modules$PackageID)

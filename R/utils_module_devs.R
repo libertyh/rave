@@ -30,7 +30,7 @@ get_module <- function(package, module_id, local = FALSE){
       logger('You are running module locally. Please specify module ID.', level = 'ERROR')
       return(invisible())
     }else{
-      return(debug_module(package = package, module_id = module_id))
+      return(debug_module(package = package, module_id = module_id, local = local))
     }
   }
 
@@ -54,12 +54,11 @@ get_module <- function(package, module_id, local = FALSE){
   .fs = list.files(system.file('template/inst/tools', package = 'rave'), pattern = '\\.R$', full.names = T)
   .fs = c(.fs, system.file('tools/input_widgets.R', package = package))
   .fs = .fs[.fs != '']
-  env = new.env()
-  with(env, {
-    for(.f in .fs){
-      source(.f, local = T)
-    }
-  })
+  # env = new.env()
+  env = new.env(parent = do.call('loadNamespace', list(package = package)))
+  for(.f in .fs){
+    source(.f, local = env)
+  }
   env$.packageName = package
 
   if(length(module_id) == 1){
@@ -87,7 +86,7 @@ get_module <- function(package, module_id, local = FALSE){
 }
 
 
-debug_module <- function(package = package, module_id = module_id, reload = FALSE){
+debug_module <- function(package = package, module_id = module_id, reload = FALSE, local=FALSE){
   .fs = list.files(system.file('template/inst/tools', package = 'rave'), pattern = '\\.R$', full.names = T)
   .fs = c(.fs, system.file('tools/input_widgets.R', package = package))
 
@@ -95,13 +94,19 @@ debug_module <- function(package = package, module_id = module_id, reload = FALS
 
   rave_dev_load <- function(){
     # Get package name
-    env = new.env()
-    with(env, {
-      for(.f in .fs){
-        source(.f, local = T)
-      }
-    })
+    # env = new.env()
+    env = new.env(parent = do.call('loadNamespace', list(package = package)))
+    for(.f in .fs){
+      source(.f, local = env)
+    }
     env$.packageName = package
+    if(local){
+      env$is_local_debug = function(){TRUE}
+      env$observe = function(...){}
+      env$observeEvent = function(...){}
+      env$reactiveValues = function(...){list(...)}
+      env$cache = function(key, val, ...){return(val)}
+    }
     return(env)
   }
   # Reload first
@@ -126,7 +131,8 @@ debug_module <- function(package = package, module_id = module_id, reload = FALS
   }
 
   # assign('aaa', env, envir = globalenv())
-  param_env = env$init_module(module_id = module_id)
+  param_env = env$init_module(module_id = module_id, force_local = local)
+
 
   runtime_env = new.env(parent = param_env)
 
