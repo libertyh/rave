@@ -55,11 +55,12 @@ rave_pre_eleclocalct3 <- function(module_id = 'ELECLOCALCT_M', sidebar_width = 2
       sub_dir = dirs$subject_dir
       
       fs_dir = threeBrain::check_freesurfer_path(sub_dir, return_path = TRUE)
-      if( is.null(fs_dir) ){
+      if( is.null(fs_dir) || isFALSE(fs_dir) ){
         return(div('Cannot find `fs` directory. Please make sure FreeSurfer directory exists', 
                    class = c("shiny.silent.error", "validation")))
       }
       
+      print(fs_dir)
       
       shinyFiles::shinyFileChoose(
         input, 'ct_path', roots = c(home = fs_dir), filetypes = c('nii', 'gz'),
@@ -101,7 +102,7 @@ rave_pre_eleclocalct3 <- function(module_id = 'ELECLOCALCT_M', sidebar_width = 2
       },
       content = function(con){
         tbl = shiny::isolate(local_data$elec_table)
-        if( nrow(tbl) ){
+        if( is.data.frame(tbl) && nrow(tbl) ){
           tbl = tbl[order(tbl$Electrode),]
           if( isFALSE(tbl$Valid) ){
             tbl$Coord_x = tbl$Coord_y = tbl$Coord_z = 0
@@ -129,7 +130,7 @@ rave_pre_eleclocalct3 <- function(module_id = 'ELECLOCALCT_M', sidebar_width = 2
       brain = local_env$brain
       current_subject = signal$current_subject #'YAB'
       thred = signal$threshold
-      n_elec = length(utils$get_from_subject('channels'))
+      n_elec = signal$n_electrodes
       if( 'rave-brain' %in% class(brain) && !is.null(brain$volumes$ct.aligned.t1) ){
         progress = progress(title = 'Guessing electrodes', max = 4)
         on.exit({ progress$close() })
@@ -145,7 +146,7 @@ rave_pre_eleclocalct3 <- function(module_id = 'ELECLOCALCT_M', sidebar_width = 2
         xyz = t(xyz)
         progress$inc('Clustering')
         hclust = stats::hclust( dist(xyz), method = 'single')
-        k = ceiling(n_elec * 1.2)
+        k = ceiling(n_elec)
         cuts = stats::cutree(hclust, k = k)
         
         progress$inc('Generating results...')
@@ -171,7 +172,8 @@ rave_pre_eleclocalct3 <- function(module_id = 'ELECLOCALCT_M', sidebar_width = 2
     
         session$sendCustomMessage(ns('eloc_viewer__shiny'), list(
           command = 'loc_add_electrodes',
-          data = centers
+          data = centers,
+          reset = TRUE
         ))
         
       }
@@ -183,7 +185,7 @@ rave_pre_eleclocalct3 <- function(module_id = 'ELECLOCALCT_M', sidebar_width = 2
       dat = lapply(dat, function(x){
         x = as.data.frame(x, stringsAsFactors = FALSE)
         if( is.null(x$DistanceToSurface) ){
-          x$DistanceToSurface = 999
+          x$DistanceToSurface = -1
         }
         if( !length(x$Label) || is.na(x$Label) || x$Label %in% c('', 'na', 'NA')){ x$Label = '' }
         x
@@ -303,7 +305,8 @@ rave_pre_eleclocalct3 <- function(module_id = 'ELECLOCALCT_M', sidebar_width = 2
       local_env$brain = brain
       
       
-      brain$plot(control_presets = c('electrode_localization', 'ct_visibility'), side_width = height)
+      brain$plot(control_presets = c('electrode_localization', 'ct_visibility'), 
+                 side_width = height, side_display = FALSE)
       
     })
   }
